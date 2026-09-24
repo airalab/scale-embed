@@ -25,8 +25,33 @@ scale_result_t scale_write_bytes(
     scale_bytes_view_t value
 )
 {
-    SCALE_TRY(scale_write_compact_u32(writer, (uint32_t)value.len));
-    SCALE_TRY(scale_write_raw(writer, value.data, value.len));
+    size_t saved_offset;
+    scale_result_t result;
+
+    if (writer == NULL) {
+        return SCALE_ERROR_INVALID_ARGUMENT;
+    }
+    if (value.data == NULL && value.len != 0U) {
+        return SCALE_ERROR_INVALID_ARGUMENT;
+    }
+    if (value.len > (size_t)UINT32_MAX) {
+        return SCALE_ERROR_OVERFLOW;
+    }
+
+    saved_offset = writer->offset;
+
+    result = scale_write_compact_u32(writer, (uint32_t)value.len);
+    if (result != SCALE_OK) {
+        writer->offset = saved_offset;
+        return result;
+    }
+
+    result = scale_write_raw(writer, value.data, value.len);
+    if (result != SCALE_OK) {
+        writer->offset = saved_offset;
+        return result;
+    }
+
     return SCALE_OK;
 }
 

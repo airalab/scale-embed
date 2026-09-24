@@ -166,4 +166,47 @@ void test_integer_run(void)
         CHECK(scale_write_u64(&w, 1U) == SCALE_ERROR_BUFFER_TOO_SMALL);
         CHECK(scale_writer_size(&w) == 0U);
     }
+
+    /* NULL output pointers must be rejected without consuming input */
+    {
+        uint8_t input[8] = { 0 };
+        scale_reader_t r;
+        uint8_t u8_out;
+        uint16_t u16_out;
+        uint32_t u32_out;
+        uint64_t u64_out;
+        int8_t i8_out;
+        int16_t i16_out;
+        int32_t i32_out;
+        int64_t i64_out;
+
+        scale_reader_init(&r, input, sizeof(input));
+        CHECK(scale_read_u8(&r, NULL) == SCALE_ERROR_INVALID_ARGUMENT);
+        CHECK(scale_reader_consumed(&r) == 0U);
+        CHECK(scale_read_u16(&r, NULL) == SCALE_ERROR_INVALID_ARGUMENT);
+        CHECK(scale_reader_consumed(&r) == 0U);
+        CHECK(scale_read_u32(&r, NULL) == SCALE_ERROR_INVALID_ARGUMENT);
+        CHECK(scale_reader_consumed(&r) == 0U);
+        CHECK(scale_read_u64(&r, NULL) == SCALE_ERROR_INVALID_ARGUMENT);
+        CHECK(scale_reader_consumed(&r) == 0U);
+
+        CHECK(scale_read_i8(&r, NULL) == SCALE_ERROR_INVALID_ARGUMENT);
+        CHECK(scale_reader_consumed(&r) == 0U);
+        CHECK(scale_read_i16(&r, NULL) == SCALE_ERROR_INVALID_ARGUMENT);
+        CHECK(scale_reader_consumed(&r) == 0U);
+        CHECK(scale_read_i32(&r, NULL) == SCALE_ERROR_INVALID_ARGUMENT);
+        CHECK(scale_reader_consumed(&r) == 0U);
+        CHECK(scale_read_i64(&r, NULL) == SCALE_ERROR_INVALID_ARGUMENT);
+        CHECK(scale_reader_consumed(&r) == 0U);
+
+        /* NULL reader */
+        CHECK(scale_read_u8(NULL, &u8_out) == SCALE_ERROR_INVALID_ARGUMENT);
+        CHECK(scale_read_u16(NULL, &u16_out) == SCALE_ERROR_INVALID_ARGUMENT);
+        CHECK(scale_read_u32(NULL, &u32_out) == SCALE_ERROR_INVALID_ARGUMENT);
+        CHECK(scale_read_u64(NULL, &u64_out) == SCALE_ERROR_INVALID_ARGUMENT);
+        CHECK(scale_read_i8(NULL, &i8_out) == SCALE_ERROR_INVALID_ARGUMENT);
+        CHECK(scale_read_i16(NULL, &i16_out) == SCALE_ERROR_INVALID_ARGUMENT);
+        CHECK(scale_read_i32(NULL, &i32_out) == SCALE_ERROR_INVALID_ARGUMENT);
+        CHECK(scale_read_i64(NULL, &i64_out) == SCALE_ERROR_INVALID_ARGUMENT);
+    }
 }

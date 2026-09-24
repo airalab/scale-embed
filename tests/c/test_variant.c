@@ -36,4 +36,15 @@ void test_variant_run(void)
         scale_reader_init(&r, buf, 0U);
         CHECK(scale_read_variant(&r, &out) == SCALE_ERROR_UNEXPECTED_EOF);
     }
+
+    /* NULL argument validation, without consuming input */
+    {
+        uint8_t input[1] = { 0x07U };
+
+        scale_reader_init(&r, input, sizeof(input));
+        CHECK(scale_read_variant(&r, NULL) == SCALE_ERROR_INVALID_ARGUMENT);
+        CHECK(scale_reader_consumed(&r) == 0U);
+
+        CHECK(scale_read_variant(NULL, &out) == SCALE_ERROR_INVALID_ARGUMENT);
+    }
 }

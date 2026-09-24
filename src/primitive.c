@@ -55,7 +55,13 @@ scale_result_t scale_write_u8(scale_writer_t *writer, uint8_t value)
 scale_result_t scale_read_u8(scale_reader_t *reader, uint8_t *value)
 {
     uint64_t raw;
-    scale_result_t result = read_uint_le(reader, &raw, 1U);
+    scale_result_t result;
+
+    if (reader == NULL || value == NULL) {
+        return SCALE_ERROR_INVALID_ARGUMENT;
+    }
+
+    result = read_uint_le(reader, &raw, 1U);
     if (result != SCALE_OK) {
         return result;
     }
@@ -71,7 +77,13 @@ scale_result_t scale_write_u16(scale_writer_t *writer, uint16_t value)
 scale_result_t scale_read_u16(scale_reader_t *reader, uint16_t *value)
 {
     uint64_t raw;
-    scale_result_t result = read_uint_le(reader, &raw, 2U);
+    scale_result_t result;
+
+    if (reader == NULL || value == NULL) {
+        return SCALE_ERROR_INVALID_ARGUMENT;
+    }
+
+    result = read_uint_le(reader, &raw, 2U);
     if (result != SCALE_OK) {
         return result;
     }
@@ -87,7 +99,13 @@ scale_result_t scale_write_u32(scale_writer_t *writer, uint32_t value)
 scale_result_t scale_read_u32(scale_reader_t *reader, uint32_t *value)
 {
     uint64_t raw;
-    scale_result_t result = read_uint_le(reader, &raw, 4U);
+    scale_result_t result;
+
+    if (reader == NULL || value == NULL) {
+        return SCALE_ERROR_INVALID_ARGUMENT;
+    }
+
+    result = read_uint_le(reader, &raw, 4U);
     if (result != SCALE_OK) {
         return result;
     }
@@ -102,6 +120,10 @@ scale_result_t scale_write_u64(scale_writer_t *writer, uint64_t value)
 
 scale_result_t scale_read_u64(scale_reader_t *reader, uint64_t *value)
 {
+    if (reader == NULL || value == NULL) {
+        return SCALE_ERROR_INVALID_ARGUMENT;
+    }
+
     return read_uint_le(reader, value, 8U);
 }
 
@@ -115,7 +137,13 @@ scale_result_t scale_write_i8(scale_writer_t *writer, int8_t value)
 scale_result_t scale_read_i8(scale_reader_t *reader, int8_t *value)
 {
     uint8_t raw;
-    scale_result_t result = scale_read_u8(reader, &raw);
+    scale_result_t result;
+
+    if (value == NULL) {
+        return SCALE_ERROR_INVALID_ARGUMENT;
+    }
+
+    result = scale_read_u8(reader, &raw);
     if (result != SCALE_OK) {
         return result;
     }
@@ -131,7 +159,13 @@ scale_result_t scale_write_i16(scale_writer_t *writer, int16_t value)
 scale_result_t scale_read_i16(scale_reader_t *reader, int16_t *value)
 {
     uint16_t raw;
-    scale_result_t result = scale_read_u16(reader, &raw);
+    scale_result_t result;
+
+    if (value == NULL) {
+        return SCALE_ERROR_INVALID_ARGUMENT;
+    }
+
+    result = scale_read_u16(reader, &raw);
     if (result != SCALE_OK) {
         return result;
     }
@@ -147,7 +181,13 @@ scale_result_t scale_write_i32(scale_writer_t *writer, int32_t value)
 scale_result_t scale_read_i32(scale_reader_t *reader, int32_t *value)
 {
     uint32_t raw;
-    scale_result_t result = scale_read_u32(reader, &raw);
+    scale_result_t result;
+
+    if (value == NULL) {
+        return SCALE_ERROR_INVALID_ARGUMENT;
+    }
+
+    result = scale_read_u32(reader, &raw);
     if (result != SCALE_OK) {
         return result;
     }
@@ -163,7 +203,13 @@ scale_result_t scale_write_i64(scale_writer_t *writer, int64_t value)
 scale_result_t scale_read_i64(scale_reader_t *reader, int64_t *value)
 {
     uint64_t raw;
-    scale_result_t result = scale_read_u64(reader, &raw);
+    scale_result_t result;
+
+    if (value == NULL) {
+        return SCALE_ERROR_INVALID_ARGUMENT;
+    }
+
+    result = scale_read_u64(reader, &raw);
     if (result != SCALE_OK) {
         return result;
     }
@@ -180,9 +226,16 @@ scale_result_t scale_write_bool(scale_writer_t *writer, bool value)
 
 scale_result_t scale_read_bool(scale_reader_t *reader, bool *value)
 {
-    size_t saved_offset = reader->offset;
+    size_t saved_offset;
     uint8_t raw;
-    scale_result_t result = scale_read_u8(reader, &raw);
+    scale_result_t result;
+
+    if (reader == NULL || value == NULL) {
+        return SCALE_ERROR_INVALID_ARGUMENT;
+    }
+
+    saved_offset = reader->offset;
+    result = scale_read_u8(reader, &raw);
     if (result != SCALE_OK) {
         return result;
     }

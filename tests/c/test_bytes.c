@@ -137,4 +137,83 @@ void test_bytes_run(void)
         scale_reader_init(&r, decoded, 0U);
         CHECK(scale_read_bytes(&r, &out) == SCALE_ERROR_UNEXPECTED_EOF);
     }
+
+    /* transactional: Compact prefix fits but payload doesn't; writer offset
+     * must be rolled back rather than left partially advanced */
+    {
+        uint8_t buf[2];
+        scale_writer_t w;
+        scale_bytes_view_t value;
+        const uint8_t payload[2] = { 0xAAU, 0xBBU };
+
+        value.data = payload;
+        value.len = sizeof(payload);
+
+        scale_writer_init(&w, buf, sizeof(buf));
+        CHECK(scale_write_bytes(&w, value) == SCALE_ERROR_BUFFER_TOO_SMALL);
+        CHECK(scale_writer_size(&w) == 0U);
+    }
+
+    /* transactional: same as above, but writer already contains data; the
+     * rollback must restore the original non-zero offset, not reset it */
+    {
+        uint8_t buf[3];
+        scale_writer_t w;
+        scale_bytes_view_t value;
+        const uint8_t payload[2] = { 0xAAU, 0xBBU };
+
+        value.data = payload;
+        value.len = sizeof(payload);
+
+        scale_writer_init(&w, buf, sizeof(buf));
+        CHECK(scale_write_u8(&w, 0x01U) == SCALE_OK);
+        CHECK(scale_writer_size(&w) == 1U);
+
+        CHECK(scale_write_bytes(&w, value) == SCALE_ERROR_BUFFER_TOO_SMALL);
+        CHECK(scale_writer_size(&w) == 1U);
+    }
+
+    /* invalid: NULL data with non-zero len must not modify writer state */
+    {
+        uint8_t buf[8];
+        scale_writer_t w;
+        scale_bytes_view_t value;
+
+        value.data = NULL;
+        value.len = 3U;
+
+        scale_writer_init(&w, buf, sizeof(buf));
+        CHECK(scale_write_bytes(&w, value) == SCALE_ERROR_INVALID_ARGUMENT);
+        CHECK(scale_writer_size(&w) == 0U);
+    }
+
+    /* invalid: NULL writer */
+    {
+        scale_bytes_view_t value;
+        const uint8_t payload[1] = { 0x01U };
+
+        value.data = payload;
+        value.len = sizeof(payload);
+
+        CHECK(scale_write_bytes(NULL, value) == SCALE_ERROR_INVALID_ARGUMENT);
+    }
+
+#if SIZE_MAX > UINT32_MAX
+    /* overflow: a length that cannot be represented as Compact<u32> must be
+     * rejected before the writer is touched. Must not allocate a buffer of
+     * that size; a non-NULL pointer to a small object stands in for it. */
+    {
+        uint8_t buf[8];
+        scale_writer_t w;
+        scale_bytes_view_t value;
+        uint8_t some_byte = 0U;
+
+        value.data = &some_byte;
+        value.len = (size_t)UINT32_MAX + 1U;
+
+        scale_writer_init(&w, buf, sizeof(buf));
+        CHECK(scale_write_bytes(&w, value) == SCALE_ERROR_OVERFLOW);
+        CHECK(scale_writer_size(&w) == 0U);
+    }
+#endif
 }
