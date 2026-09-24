@@ -1,4 +1,4 @@
-# scale-embed
+# SCALE :: Embed
 
 A minimal, deterministic, embedded-friendly [SCALE codec](https://docs.substrate.io/reference/scale-codec/)
 implemented in pure C, with no mandatory heap allocation, no C++ dependency, and no
