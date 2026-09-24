@@ -3,13 +3,7 @@
 A minimal, deterministic, embedded-friendly [SCALE codec](https://docs.substrate.io/reference/scale-codec/)
 implemented in pure C, with no mandatory heap allocation, no C++ dependency, and no
 exceptions. Designed for constrained targets (Zephyr, ESP-IDF, STM32, RIOT, bare-metal
-C, Arduino-compatible environments) as a reusable low-level building block for
-generated C runtime bindings such as `robonomics-runtime-ctypes`.
-
-`scale-embed` is intentionally independent of Robonomics, Substrate RPC, networking,
-and cryptography — it only implements SCALE serialization rules.
-
-See https://github.com/airalab/robonomics/issues/664 for the full design rationale.
+C, Arduino-compatible environments).
 
 ## Goals
 
@@ -20,13 +14,6 @@ See https://github.com/airalab/robonomics/issues/664 for the full design rationa
 - Encoding and decoding with explicit `scale_result_t` error codes — never aborts,
   asserts on user input, throws, or silently truncates.
 - Byte-for-byte compatible with the official Rust `parity-scale-codec` implementation.
-
-## Non-goals
-
-`scale-embed` does not parse runtime metadata, implement Substrate RPC, build
-extrinsics, sign payloads, implement SS58, or implement cryptography. It has no
-required C++/STL/exceptions/RTTI dependency and performs no internal heap
-allocation.
 
 ## Build
 
@@ -98,12 +85,6 @@ deferred" list), not silently dropped:
 - Optional allocator-based convenience API.
 - Fuzzing harness and sanitizer CI.
 - C++ wrappers, streaming writer callbacks.
-- A Rust (`parity-scale-codec`) reference fixture generator/verifier project
-  (`tests/reference-rust/`), and a native Zephyr module (`zephyr/module.yml`,
-  `Kconfig`). These were part of the original issue's milestone but require a
-  Rust toolchain / Zephyr SDK that was not available in the environment this
-  initial implementation was produced in. The C API and directory layout are
-  designed so both can be added later without breaking changes.
 
 ## Buffer sizing & lifetime rules
 
@@ -139,16 +120,5 @@ into CTest (`ctest --test-dir build`).
 Tests have been verified to build and pass under both C11 and C99, and
 under AddressSanitizer + UndefinedBehaviorSanitizer
 (`-fsanitize=address,undefined`).
-
-## Relationship to `parity-scale-codec` and `scale-codec-cpp`
-
-`parity-scale-codec` (Rust) is the authoritative behavioral reference for SCALE
-encoding; where any other reference disagrees, `parity-scale-codec` wins.
-`scale-codec-cpp` was reviewed as an additional implementation reference for
-algorithms, edge cases, and test scenarios, translated to the embedded C API and
-memory model described above (see the mapping table in the issue). Conformance
-vectors under `tests/vectors/` are hand-derived from the publicly documented SCALE
-Compact algorithm and known example encodings; each vector file notes its
-derivation so it can be cross-checked later against a live `parity-scale-codec`
 run once a Rust toolchain is available (see `tests/reference-rust/` follow-up
 above).
