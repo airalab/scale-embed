@@ -1,0 +1,11 @@
+{
+  "note": "SCALE enum/variant discriminants are a single raw byte. scale-embed does not validate which indexes are meaningful for a given enum -- that is the responsibility of generated runtime code -- so there is no 'malformed tag' case here, only bounds/EOF handling.",
+  "valid": [
+    { "index": 0, "encoded_hex": "00" },
+    { "index": 7, "encoded_hex": "07" },
+    { "index": 255, "encoded_hex": "ff" }
+  ],
+  "malformed": [
+    { "encoded_hex": "", "expect_error": "SCALE_ERROR_UNEXPECTED_EOF" }
+  ]
+}

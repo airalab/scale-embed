@@ -1,0 +1,12 @@
+{
+  "note": "SCALE Result<T, E> tag: Ok(T) = variant 0 followed by T, Err(E) = variant 1 followed by E. scale-embed only handles the tag byte.",
+  "valid": [
+    { "case": "ok", "encoded_hex": "00", "is_ok": true },
+    { "case": "err", "encoded_hex": "01", "is_ok": false }
+  ],
+  "malformed": [
+    { "encoded_hex": "02", "expect_error": "SCALE_ERROR_INVALID_VARIANT" },
+    { "encoded_hex": "05", "expect_error": "SCALE_ERROR_INVALID_VARIANT" },
+    { "encoded_hex": "", "expect_error": "SCALE_ERROR_UNEXPECTED_EOF" }
+  ]
+}

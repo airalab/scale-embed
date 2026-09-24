@@ -1,0 +1,33 @@
+{
+  "note": "SCALE Vec<u8>-style byte sequences: Compact(length) followed by raw bytes. Length prefixes derived from the compact_u32 encoding rule (see compact.json).",
+  "valid": [
+    { "bytes_hex": "", "encoded_hex": "00", "note": "empty sequence: Compact(0)" },
+    { "bytes_hex": "01", "encoded_hex": "0401" },
+    { "bytes_hex": "010203", "encoded_hex": "0c010203" },
+    {
+      "bytes_hex_repeat": { "byte": "aa", "count": 64 },
+      "encoded_hex_prefix": "0101",
+      "note": "64 bytes: Compact(64) = 0x0101, followed by 64 repeated 0xaa bytes"
+    }
+  ],
+  "malformed": [
+    {
+      "case": "truncated_data",
+      "encoded_hex": "0c0102",
+      "expect_error": "SCALE_ERROR_UNEXPECTED_EOF",
+      "note": "claims length 3 (Compact(3) = 0x0c) but only 2 data bytes follow"
+    },
+    {
+      "case": "capacity_too_small",
+      "encoded_hex": "0c010203",
+      "decode_capacity": 2,
+      "expect_error": "SCALE_ERROR_BUFFER_TOO_SMALL",
+      "note": "claims length 3 but caller-provided scale_bytes_t.capacity is only 2"
+    },
+    {
+      "case": "empty_input",
+      "encoded_hex": "",
+      "expect_error": "SCALE_ERROR_UNEXPECTED_EOF"
+    }
+  ]
+}

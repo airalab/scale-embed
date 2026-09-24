@@ -1,0 +1,51 @@
+{
+  "note": "Fixed-width integer, bool, and u128 vectors. These are direct consequences of the little-endian encoding rule defined in the SCALE spec (https://docs.substrate.io/reference/scale-codec/) and are unambiguous -- no parity-scale-codec run is needed to derive them, only to spot-check.",
+  "u8": [
+    { "value": 0, "encoded_hex": "00" },
+    { "value": 1, "encoded_hex": "01" },
+    { "value": 255, "encoded_hex": "ff" }
+  ],
+  "u16": [
+    { "value": 0, "encoded_hex": "0000" },
+    { "value": 1, "encoded_hex": "0100" },
+    { "value": 4660, "encoded_hex": "3412", "note": "0x1234" },
+    { "value": 65535, "encoded_hex": "ffff" }
+  ],
+  "u32": [
+    { "value": 0, "encoded_hex": "00000000" },
+    { "value": 1, "encoded_hex": "01000000" },
+    { "value": 3735928559, "encoded_hex": "efbeadde", "note": "0xDEADBEEF" },
+    { "value": 4294967295, "encoded_hex": "ffffffff", "note": "UINT32_MAX" }
+  ],
+  "u64": [
+    { "value": 0, "encoded_hex": "0000000000000000" },
+    { "value": 1, "encoded_hex": "0100000000000000" },
+    { "value": 81985529216486895, "encoded_hex": "efcdab8967452301", "note": "0x0123456789ABCDEF" },
+    { "value": 18446744073709551615, "encoded_hex": "ffffffffffffffff", "note": "UINT64_MAX" }
+  ],
+  "i8": [
+    { "value": -1, "encoded_hex": "ff" },
+    { "value": -128, "encoded_hex": "80", "note": "INT8_MIN" },
+    { "value": 127, "encoded_hex": "7f", "note": "INT8_MAX" }
+  ],
+  "i16": [
+    { "value": -1, "encoded_hex": "ffff" },
+    { "value": -32768, "encoded_hex": "0080", "note": "INT16_MIN" },
+    { "value": 32767, "encoded_hex": "ff7f", "note": "INT16_MAX" }
+  ],
+  "i32": [
+    { "value": -1, "encoded_hex": "ffffffff" },
+    { "value": -2147483648, "encoded_hex": "00000080", "note": "INT32_MIN" },
+    { "value": 2147483647, "encoded_hex": "ffffff7f", "note": "INT32_MAX" }
+  ],
+  "i64": [
+    { "value": -1, "encoded_hex": "ffffffffffffffff" },
+    { "value": -9223372036854775808, "encoded_hex": "0000000000000080", "note": "INT64_MIN" },
+    { "value": 9223372036854775807, "encoded_hex": "ffffffffffffff7f", "note": "INT64_MAX" }
+  ],
+  "u128": [
+    { "lo": 1, "hi": 0, "encoded_hex": "01000000000000000000000000000000" },
+    { "lo": 18446744073709551615, "hi": 0, "encoded_hex": "ffffffffffffffff0000000000000000", "note": "UINT64_MAX in lo half" },
+    { "lo": 0, "hi": 1, "encoded_hex": "00000000000000000100000000000000", "note": "2^64" }
+  ]
+}

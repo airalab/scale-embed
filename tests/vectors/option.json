@@ -1,0 +1,12 @@
+{
+  "note": "SCALE Option<T> tag: None = variant 0, Some(T) = variant 1 followed by T. scale-embed only handles the tag byte.",
+  "valid": [
+    { "case": "none", "encoded_hex": "00", "has_value": false },
+    { "case": "some", "encoded_hex": "01", "has_value": true }
+  ],
+  "malformed": [
+    { "encoded_hex": "02", "expect_error": "SCALE_ERROR_INVALID_VARIANT" },
+    { "encoded_hex": "ff", "expect_error": "SCALE_ERROR_INVALID_VARIANT" },
+    { "encoded_hex": "", "expect_error": "SCALE_ERROR_UNEXPECTED_EOF" }
+  ]
+}

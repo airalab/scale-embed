@@ -1,0 +1,12 @@
+{
+  "note": "SCALE bool: false = 0x00, true = 0x01; decoder rejects any other byte.",
+  "valid": [
+    { "value": false, "encoded_hex": "00" },
+    { "value": true, "encoded_hex": "01" }
+  ],
+  "malformed": [
+    { "encoded_hex": "02", "expect_error": "SCALE_ERROR_INVALID_BOOL" },
+    { "encoded_hex": "ff", "expect_error": "SCALE_ERROR_INVALID_BOOL" },
+    { "encoded_hex": "", "expect_error": "SCALE_ERROR_UNEXPECTED_EOF" }
+  ]
+}
