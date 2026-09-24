@@ -2,7 +2,7 @@
  * Minimal test utilities shared by tests/c/test_*.c. No external test
  * framework: plain C assertions with a global failure counter, plus small
  * hex helpers so encoded-byte expectations can be written/compared as hex
- * strings mirroring tests/vectors/*.json.
+ * strings mirroring tests/vectors.
  */
 #ifndef SCALE_EMBED_TEST_UTIL_H
 #define SCALE_EMBED_TEST_UTIL_H

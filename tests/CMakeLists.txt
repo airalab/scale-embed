@@ -14,3 +14,9 @@ target_include_directories(scale-embed-tests PRIVATE c)
 target_link_libraries(scale-embed-tests PRIVATE scale-embed)
 
 add_test(NAME scale-embed-tests COMMAND scale-embed-tests)
+
+if(SCALE_EMBED_STRICT_WARNINGS AND (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang"))
+    target_compile_options(scale-embed-tests PRIVATE
+        -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror
+    )
+endif()

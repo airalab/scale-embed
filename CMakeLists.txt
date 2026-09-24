@@ -28,7 +28,7 @@ target_include_directories(scale-embed
 
 if(SCALE_EMBED_STRICT_WARNINGS AND (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang"))
     target_compile_options(scale-embed PRIVATE
-        -Wall -Wextra -Wpedantic -Wconversion -Wshadow
+        -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror
     )
 endif()
 
