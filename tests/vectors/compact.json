@@ -1,5 +1,5 @@
 {
-  "note": "Compact<u32>/Compact<u64> boundary vectors. Sourced verbatim from parity-scale-codec's own unit tests (compact_integers_encoded_as_expected, compact_32/64_encoding_works) at https://github.com/paritytech/parity-scale-codec/blob/master/src/compact.rs, so these are official parity-scale-codec output, not merely hand-derived. Cross-checked independently by re-implementing the encode algorithm in a throwaway script.",
+  "note": "Compact<u32>/Compact<u64>/Compact<u128> boundary vectors. The u32/u64 vectors are sourced verbatim from parity-scale-codec's own unit tests (compact_integers_encoded_as_expected, compact_32/64_encoding_works) at https://github.com/paritytech/parity-scale-codec/blob/master/src/compact.rs, so those are official parity-scale-codec output, not merely hand-derived. The u128 vectors were derived by re-implementing parity-scale-codec's compact encoding algorithm independently (single-byte/two-byte/four-byte/big-integer modes) since values above UINT64_MAX are not exercised by that upstream test file; values are given as decimal strings because they exceed 64 bits.",
   "source_url": "https://github.com/paritytech/parity-scale-codec/blob/master/src/compact.rs",
   "compact_u32": [
     { "value": 0, "encoded_hex": "00" },
@@ -26,6 +26,19 @@
     { "value": 72057594037927935, "encoded_hex": "0fffffffffffffff", "note": "2^56 - 1" },
     { "value": 72057594037927936, "encoded_hex": "130000000000000001", "note": "2^56" },
     { "value": 18446744073709551615, "encoded_hex": "13ffffffffffffffff", "note": "UINT64_MAX" }
+  ],
+  "compact_u128": [
+    { "value": "0", "encoded_hex": "00" },
+    { "value": "63", "encoded_hex": "fc" },
+    { "value": "64", "encoded_hex": "0101" },
+    { "value": "1073741823", "encoded_hex": "feffffff", "note": "2^30 - 1" },
+    { "value": "1073741824", "encoded_hex": "0300000040", "note": "2^30" },
+    { "value": "18446744073709551615", "encoded_hex": "13ffffffffffffffff", "note": "UINT64_MAX" },
+    { "value": "18446744073709551616", "encoded_hex": "17000000000000000001", "note": "2^64" },
+    { "value": "4722366482869645213696", "encoded_hex": "1b00000000000000000001", "note": "2^72" },
+    { "value": "1329227995784915872903807060280344575", "encoded_hex": "2fffffffffffffffffffffffffffffff", "note": "2^120 - 1" },
+    { "value": "1329227995784915872903807060280344576", "encoded_hex": "3300000000000000000000000000000001", "note": "2^120" },
+    { "value": "340282366920938463463374607431768211455", "encoded_hex": "33ffffffffffffffffffffffffffffffff", "note": "UINT128_MAX" }
   ],
   "malformed_compact": [
     {
@@ -62,6 +75,18 @@
       "encoded_hex": "070000000001",
       "expect_error": "SCALE_ERROR_OVERFLOW",
       "note": "valid Compact<u64> encoding of 2^32, which does not fit in a u32"
+    },
+    {
+      "case": "count_exceeds_u128_width",
+      "encoded_hex": "ff",
+      "expect_error": "SCALE_ERROR_INVALID_COMPACT",
+      "note": "prefix 0xff has mode 3 and (prefix>>2)+4 = 67 bytes, exceeding the 16-byte width supported for Compact<u128>"
+    },
+    {
+      "case": "non_canonical_big_integer_mode_u128_9bytes",
+      "encoded_hex": "17010000000000000000",
+      "expect_error": "SCALE_ERROR_INVALID_COMPACT",
+      "note": "big-integer mode (count=9) encoding value 1 with a zero top byte, which should have used single-byte mode (and, more generally, fewer big-integer-mode bytes)"
     }
   ]
 }

@@ -1,5 +1,5 @@
 /**
- * scale-embed: Compact<u32> and Compact<u64> integer codec.
+ * scale-embed: Compact<u32>, Compact<u64>, and Compact<u128> integer codec.
  *
  * Implements all four SCALE compact modes (single-byte, two-byte,
  * four-byte, big-integer), matching parity-scale-codec byte-for-byte,
@@ -11,6 +11,7 @@
 #include <stdint.h>
 
 #include "scale_embed/error.h"
+#include "scale_embed/primitive.h"
 #include "scale_embed/reader.h"
 #include "scale_embed/writer.h"
 
@@ -36,6 +37,16 @@ scale_result_t scale_write_compact_u64(
 scale_result_t scale_read_compact_u64(
     scale_reader_t *reader,
     uint64_t *value
+);
+
+scale_result_t scale_write_compact_u128(
+    scale_writer_t *writer,
+    scale_u128_t value
+);
+
+scale_result_t scale_read_compact_u128(
+    scale_reader_t *reader,
+    scale_u128_t *value
 );
 
 #ifdef __cplusplus

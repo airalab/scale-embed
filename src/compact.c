@@ -231,3 +231,162 @@ scale_result_t scale_read_compact_u32(
     *value = (uint32_t)raw;
     return SCALE_OK;
 }
+
+/* ---- Compact<u128>: reuses u64 modes when the value fits, and extends
+ * big-integer mode to a portable 16-byte little-endian representation
+ * otherwise. No compiler __int128 required. */
+
+static void u128_to_le_bytes(scale_u128_t value, uint8_t bytes[16])
+{
+    size_t i;
+
+    for (i = 0U; i < 8U; i++) {
+        bytes[i] = (uint8_t)(value.lo >> (8U * i));
+    }
+    for (i = 0U; i < 8U; i++) {
+        bytes[8U + i] = (uint8_t)(value.hi >> (8U * i));
+    }
+}
+
+static scale_u128_t u128_from_le_bytes(const uint8_t bytes[16])
+{
+    scale_u128_t out;
+    size_t i;
+
+    out.lo = 0U;
+    out.hi = 0U;
+    for (i = 0U; i < 8U; i++) {
+        out.lo |= ((uint64_t)bytes[i]) << (8U * i);
+    }
+    for (i = 0U; i < 8U; i++) {
+        out.hi |= ((uint64_t)bytes[8U + i]) << (8U * i);
+    }
+    return out;
+}
+
+/* Number of bytes (4..16) needed to hold a 16-byte little-endian value with
+ * no leading zero byte. Only called for values > SCALE_COMPACT_MODE2_MAX. */
+static size_t compact_u128_bytes_needed(const uint8_t bytes[16])
+{
+    size_t n = 16U;
+
+    while (n > 4U && bytes[n - 1U] == 0U) {
+        n--;
+    }
+    return n;
+}
+
+scale_result_t scale_write_compact_u128(
+    scale_writer_t *writer,
+    scale_u128_t value
+)
+{
+    if (writer == NULL) {
+        return SCALE_ERROR_INVALID_ARGUMENT;
+    }
+
+    if (value.hi == 0U) {
+        /* Fits entirely in 64 bits: the existing u64 encoder already
+         * produces the correct, canonical Compact encoding. */
+        return scale_write_compact_u64(writer, value.lo);
+    }
+
+    {
+        uint8_t bytes[16];
+        uint8_t out[17];
+        size_t bytes_needed;
+        size_t i;
+
+        u128_to_le_bytes(value, bytes);
+        bytes_needed = compact_u128_bytes_needed(bytes);
+
+        out[0] = (uint8_t)(0x03U | ((bytes_needed - 4U) << 2));
+        for (i = 0U; i < bytes_needed; i++) {
+            out[1U + i] = bytes[i];
+        }
+
+        return scale_writer_write(writer, out, 1U + bytes_needed);
+    }
+}
+
+scale_result_t scale_read_compact_u128(
+    scale_reader_t *reader,
+    scale_u128_t *value
+)
+{
+    size_t saved_offset;
+    uint8_t prefix;
+    scale_result_t result;
+    unsigned mode;
+
+    if (reader == NULL || value == NULL) {
+        return SCALE_ERROR_INVALID_ARGUMENT;
+    }
+
+    saved_offset = reader->offset;
+
+    result = scale_reader_read(reader, &prefix, 1U);
+    if (result != SCALE_OK) {
+        return result;
+    }
+
+    mode = (unsigned)(prefix & 0x03U);
+
+    if (mode != 3U) {
+        /* Modes 0..2 always fit in 64 bits: rewind and delegate to the u64
+         * decoder, which already validates canonicity for these modes. */
+        uint64_t raw;
+
+        reader->offset = saved_offset;
+        result = scale_read_compact_u64(reader, &raw);
+        if (result != SCALE_OK) {
+            return result;
+        }
+
+        value->lo = raw;
+        value->hi = 0U;
+        return SCALE_OK;
+    }
+
+    /* mode == 3: big-integer mode, up to 16 bytes for u128. */
+    {
+        size_t count = (size_t)(prefix >> 2) + 4U;
+        uint8_t bytes[16];
+        size_t i;
+
+        if (count > 16U) {
+            reader->offset = saved_offset;
+            return SCALE_ERROR_INVALID_COMPACT;
+        }
+
+        for (i = 0U; i < 16U; i++) {
+            bytes[i] = 0U;
+        }
+
+        result = scale_reader_read(reader, bytes, count);
+        if (result != SCALE_OK) {
+            reader->offset = saved_offset;
+            return result;
+        }
+
+        if (count == 4U) {
+            uint32_t x = (uint32_t)bytes[0]
+                | ((uint32_t)bytes[1] << 8)
+                | ((uint32_t)bytes[2] << 16)
+                | ((uint32_t)bytes[3] << 24);
+
+            if (x <= (uint32_t)SCALE_COMPACT_MODE2_MAX) {
+                reader->offset = saved_offset;
+                return SCALE_ERROR_INVALID_COMPACT;
+            }
+        } else if (bytes[count - 1U] == 0U) {
+            /* Non-canonical: the top byte of the read is zero, so the
+             * value would have fit in fewer big-integer-mode bytes. */
+            reader->offset = saved_offset;
+            return SCALE_ERROR_INVALID_COMPACT;
+        }
+
+        *value = u128_from_le_bytes(bytes);
+        return SCALE_OK;
+    }
+}

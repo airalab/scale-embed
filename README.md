@@ -60,7 +60,7 @@ primitives via the `SCALE_TRY` macro.
 - Fixed-width integers: `u8`/`u16`/`u32`/`u64`, `i8`/`i16`/`i32`/`i64` (little-endian).
 - Portable `u128` (`scale_u128_t { uint64_t lo, hi; }`, no compiler `__int128` required).
 - `bool`.
-- `Compact<u32>` / `Compact<u64>` (all four SCALE compact modes).
+- `Compact<u32>` / `Compact<u64>` / `Compact<u128>` (all four SCALE compact modes).
 - Raw bytes (`scale_write_raw` / `scale_read_raw`, no length prefix).
 - SCALE byte sequences (`Vec<u8>`-style: `Compact(len)` + raw bytes), including a
   caller-buffer decoder (`scale_read_bytes`) and a zero-copy view decoder
